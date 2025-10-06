@@ -29,20 +29,16 @@ app.get("/", (_req, res) => {
 // ראוטים של בלוגים
 app.use("/api/blogs", blogsRouter);
 
-/**
- * Production: הגשת קבצי ה-Client הסטטיים
- * נניח שהתיקייה client/dist נמצאת בשורש הפרויקט (אח לרמת server/)
- * אם ה-client בתוך השורש לצד server/, צריך ../client/dist
- * אל תתחיל במחרוזת עם "/" כדי ש-path.join לא יזרוק את __dirname.
- */
-if (process.env.NODE_ENV === "production") {
-  const clientDist = path.join(__dirname, "../client/dist");
-  app.use(express.static(clientDist));
 
-  // כל ראוט שלא תואם ל-API יחזיר את index.html של ה-Client (SPA fallback)
+const path = require('path');
+__dirname = path.resolve();
+
+
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "client/dist")));
   app.get("*", (_req, res) => {
-    res.sendFile(path.join(clientDist, "index.html"));
-  });
+    res.sendFile(path.join(__dirname, "client/dist", "index.html"));
+  })
 }
 
 app.listen(PORT, () => {
