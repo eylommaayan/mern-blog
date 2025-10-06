@@ -5,31 +5,37 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { dbConnect } from "./config/dbConnect.js";
 import blogsRouter from "./routes/blogsRoute.js";
+import Blog from "./models/blogModel.js"; // ← בשביל syncIndexes (TTL)
 
-// טוען משתני סביבה (בלוקלי). ב-Render מומלץ להגדיר ב-Dashboard.
-dotenv.config({ path: "./server/.env" });
+// טען .env רק כשלא בפרודקשן
+if (process.env.NODE_ENV !== "production") {
+  dotenv.config({ path: "./server/.env" });
+}
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// __dirname בסביבת ESM (תיקיית הקובץ הנוכחי = server/)
+// __dirname ב-ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 app.use(express.json());
 
-// חיבור למסד (Top-level await נתמך ב-ESM)
+// חיבור למסד
 await dbConnect();
 
-// בדיקת API
+// ודא שאינדקסי המודל מסונכרנים (TTL וכו')
+await Blog.syncIndexes();
+
+// בריאות/בדיקה
 app.get("/", (_req, res) => {
   res.send({ message: "Hello World from MERN Stack Blog Application API" });
 });
 
-// ראוטים של בלוגים
+// API
 app.use("/api/blogs", blogsRouter);
 
-// Production: הגשת קבצי ה-Client (../client/dist)
+// Production: הגשת ה-Client (../client/dist)
 if (process.env.NODE_ENV === "production") {
   const clientDist = path.join(__dirname, "..", "client", "dist");
   app.use(express.static(clientDist));
