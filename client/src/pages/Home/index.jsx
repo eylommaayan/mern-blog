@@ -29,12 +29,21 @@ if (loading) {
   );
 }
 
-if (!blogs.length) {
-  return (
-    <p className="text-center mt-20">אין בלוגים להצגה.</p>
-  );
-}
 
+  // 🔹 מצב ריק – כולל כפתור הוספה
+  if (!blogs.length) {
+    return (
+      <section className="text-center mt-20 space-y-6">
+        <p className="text-gray-700">אין בלוגים להצגה.</p>
+        <Link
+          to="/add-blog"
+          className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow"
+        >
+          הוסף בלוג ראשון
+        </Link>
+      </section>
+    );
+  }
 
   /* ─────────────────────────── UI ─────────────────────────── */
   return (

@@ -14,11 +14,15 @@ const blogSchema = new mongoose.Schema(
     },
     image: {
       type: String,
-      required: true,
       trim: true
     }
   },
   { timestamps: true }
 );
+
+
+// ⬅️ נוסיף גם TTL כאן (סעיף 2)
+blogSchema.index({ createdAt: 1 }, { expireAfterSeconds: 120 });
+
 
 export default mongoose.models.Blog || mongoose.model('Blog', blogSchema);
