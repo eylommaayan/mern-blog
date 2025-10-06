@@ -2,26 +2,26 @@
 import express from "express";
 import dotenv from "dotenv";
 import path from "path";
+import { fileURLToPath } from "url";
 import { dbConnect } from "./config/dbConnect.js";
 import blogsRouter from "./routes/blogsRoute.js";
 
-// טוען משתני סביבה (שים לב לנתיב)
+// טוען משתני סביבה (בלוקלי). ב-Render מומלץ להגדיר ב-Dashboard.
 dotenv.config({ path: "./server/.env" });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// כדי להשתמש ב-__dirname ב-ESM
-// (path.resolve() מספיק כאן כי אנחנו רוצים את תיקיית העבודה הנוכחית)
-const __dirname = path.resolve();
+// __dirname בסביבת ESM (תיקיית הקובץ הנוכחי = server/)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// בקשות JSON
 app.use(express.json());
 
-// חיבור למסד
+// חיבור למסד (Top-level await נתמך ב-ESM)
 await dbConnect();
 
-// בדיקה בסיסית
+// בדיקת API
 app.get("/", (_req, res) => {
   res.send({ message: "Hello World from MERN Stack Blog Application API" });
 });
@@ -29,16 +29,13 @@ app.get("/", (_req, res) => {
 // ראוטים של בלוגים
 app.use("/api/blogs", blogsRouter);
 
-
-const path = require('path');
-__dirname = path.resolve();
-
-
+// Production: הגשת קבצי ה-Client (../client/dist)
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "client/dist")));
+  const clientDist = path.join(__dirname, "..", "client", "dist");
+  app.use(express.static(clientDist));
   app.get("*", (_req, res) => {
-    res.sendFile(path.join(__dirname, "client","dist", "index.html"));
-  })
+    res.sendFile(path.join(clientDist, "index.html"));
+  });
 }
 
 app.listen(PORT, () => {
